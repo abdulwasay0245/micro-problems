@@ -1,36 +1,176 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🇵🇰 Micro Problems PK — Full Stack Web App
 
-## Getting Started
+> **Small Problems. Big Impact. Let's fix our communities together.**
 
-First, run the development server:
+A community-driven platform where citizens of Pakistan can report, upvote, and track local infrastructure issues — built as a full-stack Next.js application.
+
+---
+
+## 🚀 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Framework** | Next.js 16 (App Router) |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS v4 |
+| **Database** | PostgreSQL (Neon) |
+| **ORM** | Prisma |
+| **Auth** | NextAuth.js (Google OAuth) |
+| **Image Upload** | Cloudinary + next-cloudinary |
+| **Maps** | Leaflet + OpenStreetMap + Nominatim |
+| **Deployment** | Vercel |
+
+---
+
+## 📦 Packages
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Core
+next, react, react-dom, typescript
+
+# Auth
+next-auth
+
+# Database
+prisma, @prisma/client
+
+# Maps
+leaflet, react-leaflet, @types/leaflet
+
+# Image Upload
+cloudinary, next-cloudinary
+
+# Utilities
+dotenv
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🗄️ Database Schema
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+User        → has many Issues, Comments, Upvotes
+Issue       → has many Comments, Upvotes
+             → belongs to User
+             → has Location (lat, lng, address)
+             → has Status (pending, in_progress, resolved)
+Comment     → belongs to User and Issue
+Upvote      → belongs to User and Issue (unique per user per issue)
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ✅ Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🔐 Phase 1–2 — Setup & Database
+- Next.js 16 project with TypeScript + Tailwind CSS
+- PostgreSQL database hosted on Neon
+- Prisma ORM with full schema design
+- Environment variables setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 🔐 Phase 3 — Authentication
+- Google OAuth login via NextAuth.js
+- Auto-save user to database on first login
+- Session management with user roles (user / admin)
+- Protected routes
 
-## Deploy on Vercel
+### 📝 Phase 4 — Issue Reporting
+- Report form with title, category, description
+- Image upload via Cloudinary
+- Interactive map with Leaflet + OpenStreetMap
+- Search location by name (Nominatim API)
+- Click to pin exact location on map
+- Reverse geocoding (coordinates → address)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 📊 Phase 5 — Dashboard
+- Real-time stats (Total / Pending / Resolved)
+- All issues in a list with images and location
+- Filter by category and status
+- Sort by newest
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 👍 Phase 6 — Community Features
+- Upvote/unvote issues
+- Comment on issues
+- Share issues via Web Share API or clipboard
+
+### 🗺️ Phase 7 — Map View
+- View all reported issues on a live map
+- Click markers to view issue details
+
+### 🛠️ Phase 8 — Admin Panel
+- Role-based access (admin only)
+- Change issue status (Pending → In Progress → Resolved)
+- Delete spam or fake reports
+- Analytics by category and city
+
+### 🔔 Phase 9 — Notifications
+- Email notifications when issue status changes
+- Powered by Resend or Nodemailer
+
+### 🚀 Phase 10 — Deployment
+- Deployed on Vercel
+- Connected to Neon PostgreSQL
+- Environment variables configured
+
+---
+
+## 🗂️ Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── auth/[...nextauth]/   # NextAuth
+│   │   └── issue/
+│   │       ├── route.ts          # GET all, POST create
+│   │       └── [id]/
+│   │           ├── route.ts      # GET single issue
+│   │           ├── upvote/       # POST upvote toggle
+│   │           └── comments/     # GET & POST comments
+│   ├── dashboard/                # Dashboard page
+│   ├── report/                   # Report form page
+│   ├── issues/[id]/              # Issue detail page
+│   └── admin/                    # Admin panel
+├── components/
+│   ├── ui/                       # Buttons, inputs, cards
+│   ├── layout/                   # Navbar, footer, providers
+│   └── features/                 # MapPicker, ImageUpload
+├── lib/
+│   └── prisma.ts                 # Shared Prisma instance
+└── types/
+    └── next-auth.d.ts            # Extended session types
+```
+
+---
+
+## 🌍 Environment Variables
+
+```bash
+# Database
+DATABASE_URL=""
+
+# NextAuth
+NEXTAUTH_SECRET=""
+NEXTAUTH_URL=""
+
+# Google OAuth
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# Cloudinary
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=""
+CLOUDINARY_API_KEY=""
+CLOUDINARY_API_SECRET=""
+```
+
+---
+
+## 🔗 Links
+
+- 🌐 **Live Demo**: _coming soon_
+- 💻 **GitHub**: [github.com/YOUR_USERNAME/micro-problems-pk](https://github.com)
+- 📧 **Contact**: your@email.com
+
+---
+
+> Built with ❤️ for Pakistan 🇵🇰 — because small problems deserve big attention.
