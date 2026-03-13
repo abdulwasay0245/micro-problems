@@ -4,6 +4,7 @@ import { sql } from "@/lib/db";
 import { nanoid } from "nanoid";
 
 const handler = NextAuth({
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
