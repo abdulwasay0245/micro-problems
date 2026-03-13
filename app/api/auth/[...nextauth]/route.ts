@@ -31,12 +31,21 @@ const handler = NextAuth({
 
     // 2. Runs when JWT token is created → adds role to token
     async jwt({ token, user }) {
-      if (user?.email) {
-        const result = await sql`
-          SELECT * FROM "User" WHERE email = ${user.email} LIMIT 1
-        `;
-        const dbUser = result[0];
-        token.role = dbUser?.role; // ✅ store role inside token
+      // 'user' is only passed the very first time the user logs in.
+      // On sub-sequent requests (like loading /report), we only have 'token'.
+      const sessionEmail = user?.email || token?.email;
+      
+      if (sessionEmail && !token.role) {
+        try {
+          const result = await sql`
+            SELECT role FROM "User" WHERE email = ${sessionEmail} LIMIT 1
+          `;
+          if (result.length > 0) {
+            token.role = result[0].role; // ✅ store role inside token
+          }
+        } catch (error) {
+           console.error('JWT Session Error:', error);
+        }
       }
       return token;
     },
