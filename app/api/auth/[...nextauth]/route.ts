@@ -13,17 +13,22 @@ const handler = NextAuth({
   callbacks: {
     // 1. Runs when user signs in → saves user to database
     async signIn({ user }) {
-      await prisma.user.upsert({
-        where: { email: user.email! },
-        update: {},
-        create: {
-          email: user.email!,
-          name: user.name,
-          image: user.image,
-        },
-      });
-      return true;
-    },
+  try {
+    await prisma.user.upsert({
+      where: { email: user.email! },
+      update: {},
+      create: {
+        email: user.email!,
+        name: user.name,
+        image: user.image,
+      },
+    });
+    return true;
+  } catch (error) {
+    console.error('SignIn error:', error); // ✅ this will show in Vercel logs
+    return false;
+  }
+},
 
     // 2. Runs when JWT token is created → adds role to token
     async jwt({ token, user }) {
