@@ -1,14 +1,47 @@
-import NextAuth from "next-auth"
-import GoogleProvider from "next-auth/providers/google"
-
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import prisma from "@/lib/prisma";
 
 const handler = NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    })
+    }),
   ],
-})
 
-export { handler as GET, handler as POST }
+  callbacks: {
+    // 1. Runs when user signs in → saves user to database
+    async signIn({ user }) {
+      await prisma.user.upsert({
+        where: { email: user.email! },
+        update: {},
+        create: {
+          email: user.email!,
+          name: user.name,
+          image: user.image,
+        },
+      });
+      return true;
+    },
+
+    // 2. Runs when JWT token is created → adds role to token
+    async jwt({ token, user }) {
+      if (user?.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+        token.role = dbUser?.role; // ✅ store role inside token
+      }
+      return token;
+    },
+
+    // 3. Runs when session is accessed → adds role and id to session
+    async session({ session, token }) {
+      session.user.role = token.role as string; // ✅ make role available in useSession()
+      return session;
+    },
+  },
+});
+
+export { handler as GET, handler as POST };

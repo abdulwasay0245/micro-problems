@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
@@ -74,6 +75,8 @@ export default function DashboardPage() {
             <div className="text-center py-20 text-gray-400">No issues found</div>
           )}
           {filtered.map(issue => (
+            <Link href={`/issues/${issue.id}`} key={issue.id}>
+
             <div key={issue.id} className="bg-white rounded-2xl shadow-sm p-6 flex gap-4">
               {issue.image && (
                 <img src={issue.image} alt={issue.title} className="w-24 h-24 object-cover rounded-xl" />
@@ -83,8 +86,8 @@ export default function DashboardPage() {
                   <h2 className="font-semibold text-green-900 text-lg">{issue.title}</h2>
                   <span className={`text-xs px-3 py-1 rounded-full font-medium
                     ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                      issue.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'}`}>
+                    issue.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'}`}>
                     {issue.status}
                   </span>
                 </div>
@@ -97,6 +100,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+                        </Link>
           ))}
         </div>
 
