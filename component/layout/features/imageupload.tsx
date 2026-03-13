@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { CldUploadWidget } from 'next-cloudinary';
 
 export default function ImageUpload({ onUpload }: { onUpload: (url: string) => void }) {

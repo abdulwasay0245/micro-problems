@@ -1,12 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+
 import { useRouter } from 'next/navigation';
 
 const statusOptions = ['pending', 'in_progress', 'resolved'];
 
 export default function AdminPage() {
-  const { data: session } = useSession();
+ 
   const router = useRouter();
   const [issues, setIssues] = useState<any[]>([]);
   const [filter, setFilter] = useState('');
