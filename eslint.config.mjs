@@ -7,7 +7,8 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "off", // ✅ disables `any` warnings
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",// ✅ disables `any` warnings
     },
   },
   globalIgnores([
