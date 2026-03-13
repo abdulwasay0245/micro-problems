@@ -76,7 +76,7 @@ export default function Navbar() {
               </div>
             ) : (
               <button
-                onClick={() => signIn('google')}
+                onClick={() => signIn()}
                 className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-5 py-2 rounded-full text-sm font-medium shadow-sm hover:shadow-md hover:bg-gray-50 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
