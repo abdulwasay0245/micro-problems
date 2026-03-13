@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import prisma from '@/lib/prisma';
+import { sql } from '@/lib/db';
 
 // Update issue status
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -11,19 +11,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const userResult = await sql`SELECT role FROM "User" WHERE email = ${session.user.email} LIMIT 1`;
+  const user = userResult[0];
+
   if (user?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const { status } = await request.json();
 
-  const issue = await prisma.issue.update({
-    where: { id },
-    data: { status },
-  });
+  const issueResult = await sql`
+    UPDATE "Issue" 
+    SET status = ${status}, "updatedAt" = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
 
-  return NextResponse.json(issue);
+  return NextResponse.json(issueResult[0]);
 }
 
 // Delete issue
@@ -35,11 +39,14 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  const userResult = await sql`SELECT role FROM "User" WHERE email = ${session.user.email} LIMIT 1`;
+  const user = userResult[0];
+
   if (user?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  await prisma.issue.delete({ where: { id } });
+  await sql`DELETE FROM "Issue" WHERE id = ${id}`;
+  
   return NextResponse.json({ deleted: true });
 }

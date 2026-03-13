@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import prisma from "@/lib/prisma";
+import { sql } from "@/lib/db";
+import { nanoid } from "nanoid";
 
 const handler = NextAuth({
   providers: [
@@ -13,29 +14,28 @@ const handler = NextAuth({
   callbacks: {
     // 1. Runs when user signs in → saves user to database
     async signIn({ user }) {
-  try {
-    await prisma.user.upsert({
-      where: { email: user.email! },
-      update: {},
-      create: {
-        email: user.email!,
-        name: user.name,
-        image: user.image,
-      },
-    });
-    return true;
-  } catch (error) {
-    console.error('SignIn error:', error); // ✅ this will show in Vercel logs
-    return false;
-  }
-},
+      try {
+        const id = nanoid(25);
+        await sql`
+          INSERT INTO "User" (id, email, name, image, role, "createdAt")
+          VALUES (${id}, ${user.email}, ${user.name}, ${user.image}, 'user', NOW())
+          ON CONFLICT (email) DO UPDATE 
+          SET name = EXCLUDED.name, image = EXCLUDED.image
+        `;
+        return true;
+      } catch (error) {
+        console.error('SignIn error:', error); // ✅ this will show in Vercel logs
+        return false;
+      }
+    },
 
     // 2. Runs when JWT token is created → adds role to token
     async jwt({ token, user }) {
       if (user?.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
+        const result = await sql`
+          SELECT * FROM "User" WHERE email = ${user.email} LIMIT 1
+        `;
+        const dbUser = result[0];
         token.role = dbUser?.role; // ✅ store role inside token
       }
       return token;

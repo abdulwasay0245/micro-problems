@@ -1,14 +1,35 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import prisma from '@/lib/prisma';
+import { sql } from '@/lib/db';
+import { nanoid } from 'nanoid';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const comments = await prisma.comment.findMany({
-    where: { issueId: id },
-    orderBy: { createdAt: 'desc' },
-    include: { user: { select: { name: true, image: true } } },
-  });
+  
+  const commentsRaw = await sql`
+    SELECT 
+      c.*,
+      u.name AS "userName",
+      u.image AS "userImage"
+    FROM "Comment" c
+    LEFT JOIN "User" u ON c."userId" = u.id
+    WHERE c."issueId" = ${id}
+    ORDER BY c."createdAt" DESC
+  `;
+
+  // Map flat SQL result to Nested Object matching Prisma's shape
+  const comments = commentsRaw.map((comment) => ({
+    id: comment.id,
+    content: comment.content,
+    createdAt: comment.createdAt,
+    userId: comment.userId,
+    issueId: comment.issueId,
+    user: {
+      name: comment.userName,
+      image: comment.userImage,
+    },
+  }));
+
   return NextResponse.json(comments);
 }
 
@@ -19,13 +40,33 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  // Get user ID based on session email
+  const userResult = await sql`SELECT id, name, image FROM "User" WHERE email = ${session.user.email} LIMIT 1`;
+  if (userResult.length === 0) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+  const user = userResult[0];
+
   const { content } = await request.json();
+  const commentId = nanoid(25);
 
-  const comment = await prisma.comment.create({
-    data: { content, userId: user!.id, issueId: id },
-    include: { user: { select: { name: true, image: true } } },
-  });
+  // Insert the comment
+  const commentResult = await sql`
+    INSERT INTO "Comment" (id, content, "userId", "issueId", "createdAt")
+    VALUES (${commentId}, ${content}, ${user.id}, ${id}, NOW())
+    RETURNING *
+  `;
 
-  return NextResponse.json(comment);
+  const newComment = commentResult[0];
+
+  // Return the comment matching Prisma's `include` shape
+  const responseComment = {
+    ...newComment,
+    user: {
+      name: user.name,
+      image: user.image,
+    },
+  };
+
+  return NextResponse.json(responseComment);
 }
