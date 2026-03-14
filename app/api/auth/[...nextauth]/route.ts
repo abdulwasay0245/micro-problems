@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: "jwt" },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
