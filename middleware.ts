@@ -3,9 +3,14 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(req: NextRequest) {
+  // Vercel issues __Secure- cookies for HTTPS domains. NextAuth edge
+  // sometimes fails to infer this. Here we check the exact cookie explicitly.
+  const isSecureCookie = req.cookies.has("__Secure-next-auth.session-token");
+
   const token = await getToken({ 
     req, 
-    secret: process.env.NEXTAUTH_SECRET 
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: isSecureCookie
   });
 
   const pathname = req.nextUrl.pathname;
